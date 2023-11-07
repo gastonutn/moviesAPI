@@ -47,9 +47,9 @@ const getMovieById = async (id) => {
         }
         const movie = await db.Movie.findByPk(id, {
             attributes: {
-                exclude: ['created_at', 'updated_at']
+                exclude: ['created_at', 'updated_at','genre_id']
             },
-            incluide: [
+            include: [
                 {
                     association: 'genre',
                     attributes: ['id', 'name']
@@ -81,32 +81,32 @@ const getMovieById = async (id) => {
 
 const storeMovie = async (dataMovie, actors) => {
     try {
-        const newMovie = await db.Movie.create(dataMovie)
-        if (actors) {
-            const actorsDB = actors.map(actor => {
-                return {
-                    movie_id: newMovie.id,
-                    actor_id: actor
-                }
-            })
-            await db.Actor_Movie.bulkCreate(actorsDB, {
-                validate: true
-            })
-        }
-        return await getMovieById(newMovie.id)
+      const newMovie = await db.Movie.create(dataMovie);
+      if (actors) {
+        const actorsDB = actors.map((actor) => {
+          return {
+            movie_id: newMovie.id,
+            actor_id: actor,
+          };
+        });
+        await db.Actor_Movie.bulkCreate(actorsDB, {
+          validate: true,
+        });
+      }
+      return await getMovieById(newMovie.id);
+
     } catch (error) {
-        console.log(error);
-        throw {
-            status: error.status || 500,
-            message: error.message || 'ERROR en servicio'
-        }
-    }
-}
+      console.log(error);
+      throw {
+        status: error.status || 500,
+        message: error.message || "Error en el servicio",
+   };
+   }
+  };
 
 const updateMovie = async (id,dataMovie) => {
+   
     try {
-
-
         const {title,awards, rating,length,release_date,genre_id,actors}= dataMovie
 
         if (!id) {
@@ -117,7 +117,7 @@ const updateMovie = async (id,dataMovie) => {
         }
         const movie = await db.Movie.findByPk(id,{
             attributes: {
-                exclude: ['created_at', 'updated_at']
+                exclude: ['created_at', 'updated_at',"genre_id"]
             },
             incluide: [
                 {
@@ -132,7 +132,6 @@ const updateMovie = async (id,dataMovie) => {
                     }
                 }
             ],
-
         });
         if (!movie) {
             throw {
@@ -149,27 +148,27 @@ const updateMovie = async (id,dataMovie) => {
         movie.genre_id = genre_id || movie.genre_id;
 
         await movie.save();
-       
-
-        if(actors.length){
+    
+        if(actors?.length){
             await db.Actor_Movie.destroy({
                 where: {
                     movie_id : id
                 }
             })
-            const actorArray = actors.map(actor => {
+            const actorsArray = actors.map(actor => {
                 return {
                     movie_id : id,
                     actor_id : actor
                 }
             })
-            await db.Actor_Movie.bulkCreate(actorArray,{
+            await db.Actor_Movie.bulkCreate(actorsArray,{
                 validate:true
             })
         }
-        return movie.reload()
-
+       
+        
         return movie
+
                 
     } catch (error) {
         console.log(error);

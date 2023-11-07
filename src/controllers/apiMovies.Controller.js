@@ -1,4 +1,4 @@
-const { getAllMovies, getMovieById, updateMovie, deleteMovie } = require("../services/movies.services")
+const { getAllMovies, getMovieById, updateMovie, deleteMovie, storeMovie } = require("../services/movies.services")
 const paginate = require('express-paginate')
 const createError = require('http-errors')
 module.exports = {
@@ -54,15 +54,16 @@ module.exports = {
     },
     store: async (req, res) => {
         try {
-            const { title, rating, release_date, awards, length, genre_id, actors } = req.body
-            if ([title, rating, release_date, awards, length].includes('' || undefined)) {
-                throw createError(400, 'Todos los campos obligatorio')
+            const { title, rating, release_date, awards,length, genre_id, actors } = req.body
+            if ([title, rating, release_date, awards].includes('' || undefined)) {
+                throw createError(400, 'Todos los campos obligatorios')
             }
-            const movie = storeMovie(req.body, actors)
+            const movie =await storeMovie(req.body, actors)
             return res.status(200).json({
                 ok: true,
                 message: 'pelicula agregada con exito',
                 url: `${req.protocol}://${req.get('host')}/api/v1/movies/${movie.id}`
+
             })
         } catch (error) {
             console.log(error);
